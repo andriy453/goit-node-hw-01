@@ -16,8 +16,8 @@ const argv = program.opts();
 async function invokeAction({ action, id, name, email, phone }) {
   switch (action) {
     case "list":
-      const list = await contacts.listContacts();
-      console.table(list);
+    await contacts.listContacts();
+      // console.table(list);
       break;
 
     case "get":
@@ -40,4 +40,44 @@ async function invokeAction({ action, id, name, email, phone }) {
   }
 }
 
-invokeAction(argv);
+// invokeAction(argv);
+
+const express = require('express')
+const app = express()
+const  cors = require('cors')
+const HttpError = require("./HttpError");
+const port = 3000
+app.use(cors())
+
+app.get('/', (req, res) => {
+  res.send('jjk')
+})
+app.get('/contact',async (req,res)=>{
+    const result  = await contacts.listContacts()
+    res.json(result)
+})
+app.get('/contact/:id',async (req,res)=>{
+  const {id} = req.params;
+ try{
+  const result  = await contacts.getContactById(id)
+  if(result === null){
+    HttpError(404,'Not found')
+  }
+  res.json(result)
+ }
+ catch(error){
+const {status = 500 , message = 'Server Error'} = error;
+res.status(status).json({
+  message,
+})
+ }
+})
+app.post('/contact',async (req,res)=>{
+  const { email, password } = req.body;
+  res.send(req.body)
+})
+
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`)
+})
